@@ -1,13 +1,16 @@
 import express from "express";
 import { S3Client, GetObjectCommand } from "@aws-sdk/client-s3";
 import { Readable } from "stream";
+import dotenv from "dotenv";
+
+dotenv.config();
 
 const s3Client = new S3Client({
-  region: "auto",
-  endpoint: "https://726d35c45a73baff9771fb499d309432.r2.cloudflarestorage.com",
+  region: process.env.AWS_REGION,
+  endpoint: process.env.AWS_ENDPOINT,
   credentials: {
-    accessKeyId: "bab6422746fd4d56a9161dc1e57d113c",
-    secretAccessKey: "403c892208d58ccf584872fa47fde059ee0abf397e3ff5c7a431cfedbb79ca8f"
+    accessKeyId: process.env.AWS_ACCESS_KEY_ID!,
+    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY!
   }
 });
 
@@ -20,18 +23,17 @@ app.get("/*", async (req, res) => {
 
   try {
     const data = await s3Client.send(new GetObjectCommand({
-      Bucket: "deplox",
+      Bucket: process.env.AWS_BUCKET_NAME!,
       Key: `dist/${id}/${filePath}`
     }));
 
     const type = filePath.endsWith(".html") ? "text/html" :
-                 filePath.endsWith(".css") ? "text/css" : 
-                 filePath.endsWith(".js") ? "application/javascript" : 
+                 filePath.endsWith(".css") ? "text/css" :
+                 filePath.endsWith(".js") ? "application/javascript" :
                  "application/octet-stream";
 
     res.set("Content-Type", type);
 
-    // TypeScript-safe stream handling
     const bodyStream = data.Body;
     if (bodyStream instanceof Readable) {
       bodyStream.pipe(res);

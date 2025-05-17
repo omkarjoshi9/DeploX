@@ -1,25 +1,25 @@
 import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
 import fs from "fs";
+import dotenv from "dotenv";
+
+dotenv.config();
 
 const s3Client = new S3Client({
-  region: "auto", 
-  endpoint: "https://726d35c45a73baff9771fb499d309432.r2.cloudflarestorage.com",
+  region: process.env.AWS_REGION,
+  endpoint: process.env.AWS_ENDPOINT,
   credentials: {
-    accessKeyId: "bab6422746fd4d56a9161dc1e57d113c",
-    secretAccessKey: "403c892208d58ccf584872fa47fde059ee0abf397e3ff5c7a431cfedbb79ca8f"
+    accessKeyId: process.env.AWS_ACCESS_KEY_ID!,
+    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY!,
   }
 });
-
-// fileName => output/12829/src/App.jsx
-// localFilePath => /Users/"Omkar Joshi"/DeploX/Deplox-Upload-Service/dist/output/12829/src/App.jsx
 
 export const uploadFile = async (fileName: string, localFilePath: string) => {
   const fileContent = fs.readFileSync(localFilePath);
 
   const uploadParams = {
-    Bucket: "deplox",
+    Bucket: process.env.AWS_BUCKET_NAME,
     Key: fileName,
-    Body: fileContent
+    Body: fileContent,
   };
 
   try {
