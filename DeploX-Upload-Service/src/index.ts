@@ -9,7 +9,6 @@ import { createClient } from "redis";
 const publisher = createClient();
 publisher.connect();
 
-
 const app = express();
 app.use(cors());
 app.use(express.json());

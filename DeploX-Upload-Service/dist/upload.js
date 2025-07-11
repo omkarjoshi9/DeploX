@@ -15,22 +15,22 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.uploadFile = void 0;
 const client_s3_1 = require("@aws-sdk/client-s3");
 const fs_1 = __importDefault(require("fs"));
+const dotenv_1 = __importDefault(require("dotenv"));
+dotenv_1.default.config();
 const s3Client = new client_s3_1.S3Client({
-    region: "auto",
-    endpoint: "https://726d35c45a73baff9771fb499d309432.r2.cloudflarestorage.com",
+    region: process.env.AWS_REGION,
+    endpoint: process.env.AWS_ENDPOINT,
     credentials: {
-        accessKeyId: "bab6422746fd4d56a9161dc1e57d113c",
-        secretAccessKey: "403c892208d58ccf584872fa47fde059ee0abf397e3ff5c7a431cfedbb79ca8f"
+        accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+        secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
     }
 });
-// fileName => output/12829/src/App.jsx
-// localFilePath => /Users/"Omkar Joshi"/DeploX/Deplox-Upload-Service/dist/output/12829/src/App.jsx
 const uploadFile = (fileName, localFilePath) => __awaiter(void 0, void 0, void 0, function* () {
     const fileContent = fs_1.default.readFileSync(localFilePath);
     const uploadParams = {
-        Bucket: "deplox",
+        Bucket: process.env.AWS_BUCKET_NAME,
         Key: fileName,
-        Body: fileContent
+        Body: fileContent,
     };
     try {
         const command = new client_s3_1.PutObjectCommand(uploadParams);

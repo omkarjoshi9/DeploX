@@ -1,7 +1,4 @@
 "use strict";
-//Access Key - bab6422746fd4d56a9161dc1e57d113c
-//Secret - 403c892208d58ccf584872fa47fde059ee0abf397e3ff5c7a431cfedbb79ca8f
-//endpoint- https://726d35c45a73baff9771fb499d309432.r2.cloudflarestorage.com
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -29,7 +26,7 @@ const app = (0, express_1.default)();
 app.use((0, cors_1.default)());
 app.use(express_1.default.json());
 app.post("/deploy", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const repoUrl = req.body.repoUrl; //github url that the user will hit
+    const repoUrl = req.body.repoUrl;
     console.log(repoUrl);
     const id = (0, utils_1.generate)();
     yield (0, simple_git_1.default)().clone(repoUrl, path_1.default.join(__dirname, `output/${id}`));
@@ -37,7 +34,9 @@ app.post("/deploy", (req, res) => __awaiter(void 0, void 0, void 0, function* ()
     files.forEach((file) => __awaiter(void 0, void 0, void 0, function* () {
         yield (0, upload_1.uploadFile)(file.slice(__dirname.length + 1), file);
     }));
+    yield new Promise((resolve) => setTimeout(resolve, 5000));
     publisher.lPush("build-queue", id);
+    publisher.hSet("status", id, "uploaded");
     res.json({
         id: id
     });
