@@ -1,6 +1,6 @@
-<mxfile host="Electron" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) draw.io/24.7.17 Chrome/128.0.6613.36 Electron/32.0.1 Safari/537.36" version="24.7.17">
+<mxfile host="app.diagrams.net" agent="Mozilla/5.0 (X11; Linux x86_64; rv:140.0) Gecko/20100101 Firefox/140.0" version="28.0.1">
   <diagram id="chSc8eJwqFy3lXWsQzqH" name="Page-1">
-    <mxGraphModel dx="2284" dy="836" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+    <mxGraphModel dx="1783" dy="634" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
@@ -13,10 +13,10 @@
         <mxCell id="github" value="GitHub" style="ellipse;whiteSpace=wrap;html=1;fillColor=#f39c12" parent="1" vertex="1">
           <mxGeometry x="360" y="40" width="100" height="60" as="geometry" />
         </mxCell>
-        <mxCell id="s3_upload" value="S3(React)" style="ellipse;whiteSpace=wrap;html=1;fillColor=#9b59b6" parent="1" vertex="1">
-          <mxGeometry x="360" y="160" width="140" height="60" as="geometry" />
+        <mxCell id="s3_upload" value="S3" style="ellipse;whiteSpace=wrap;html=1;fillColor=#9b59b6" parent="1" vertex="1">
+          <mxGeometry x="500" y="390" width="140" height="60" as="geometry" />
         </mxCell>
-        <mxCell id="x-0vK5npGYyJ1vBO1GtR-4" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="queue" target="worker1">
+        <mxCell id="x-0vK5npGYyJ1vBO1GtR-4" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" parent="1" source="queue" target="worker1" edge="1">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
         <mxCell id="queue" value="Queue (Redis)" style="shape=label;whiteSpace=wrap;html=1;aspect=fixed;fillStyle=solid;rounded=1;" parent="1" vertex="1">
@@ -29,7 +29,11 @@
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
         <mxCell id="e3" style="endArrow=classic;startArrow=classic;html=1;" parent="1" source="upload" target="s3_upload" edge="1">
-          <mxGeometry relative="1" as="geometry" />
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="580" y="130" />
+            </Array>
+          </mxGeometry>
         </mxCell>
         <mxCell id="e4" style="endArrow=block;" parent="1" source="upload" target="queue" edge="1">
           <mxGeometry relative="1" as="geometry" />
@@ -55,21 +59,23 @@
         <mxCell id="e7" style="endArrow=block;" parent="1" source="queue2" target="worker3" edge="1">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="e8" style="endArrow=block;entryX=0.443;entryY=-0.033;entryDx=0;entryDy=0;entryPerimeter=0;" parent="1" source="worker1" target="x-0vK5npGYyJ1vBO1GtR-1" edge="1">
+        <mxCell id="e8" style="endArrow=block;entryX=0;entryY=0;entryDx=0;entryDy=0;" parent="1" source="worker1" target="s3_upload" edge="1">
           <mxGeometry relative="1" as="geometry">
             <Array as="points">
-              <mxPoint x="452" y="350" />
+              <mxPoint x="520" y="350" />
             </Array>
+            <mxPoint x="300" y="330" as="sourcePoint" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="e9" style="endArrow=block;entryX=-0.007;entryY=0.633;entryDx=0;entryDy=0;entryPerimeter=0;" parent="1" source="worker2" target="x-0vK5npGYyJ1vBO1GtR-1" edge="1">
+        <mxCell id="e9" style="endArrow=block;entryX=0;entryY=1;entryDx=0;entryDy=0;" parent="1" source="worker2" target="s3_upload" edge="1">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="e10" style="endArrow=block;entryX=0.5;entryY=1;entryDx=0;entryDy=0;" parent="1" source="worker3" target="x-0vK5npGYyJ1vBO1GtR-1" edge="1">
+        <mxCell id="e10" style="endArrow=block;entryX=0.5;entryY=1;entryDx=0;entryDy=0;" parent="1" source="worker3" target="s3_upload" edge="1">
           <mxGeometry relative="1" as="geometry">
             <Array as="points">
-              <mxPoint x="460" y="540" />
+              <mxPoint x="570" y="540" />
             </Array>
+            <mxPoint x="460" y="460" as="targetPoint" />
           </mxGeometry>
         </mxCell>
         <mxCell id="users" value="Global Users" style="rounded=1;whiteSpace=wrap;html=1;" parent="1" vertex="1">
@@ -81,16 +87,14 @@
         <mxCell id="e11" style="endArrow=classic;startArrow=classic;html=1;" parent="1" source="users" target="domain" edge="1">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="e12" style="endArrow=classic;entryX=0.714;entryY=1;entryDx=0;entryDy=0;entryPerimeter=0;startArrow=classic;html=1;" parent="1" source="domain" target="x-0vK5npGYyJ1vBO1GtR-1" edge="1">
+        <mxCell id="e12" style="endArrow=classic;entryX=1;entryY=0.5;entryDx=0;entryDy=0;startArrow=classic;html=1;" parent="1" source="domain" target="s3_upload" edge="1">
           <mxGeometry relative="1" as="geometry">
             <mxPoint x="340" y="650" as="targetPoint" />
             <Array as="points">
-              <mxPoint x="490" y="650" />
+              <mxPoint x="690" y="650" />
+              <mxPoint x="690" y="420" />
             </Array>
           </mxGeometry>
-        </mxCell>
-        <mxCell id="x-0vK5npGYyJ1vBO1GtR-1" value="S3(HTML+CSS+JS)" style="ellipse;whiteSpace=wrap;html=1;fillColor=#8e44ad" vertex="1" parent="1">
-          <mxGeometry x="390" y="400" width="140" height="60" as="geometry" />
         </mxCell>
       </root>
     </mxGraphModel>

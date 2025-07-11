@@ -10,18 +10,22 @@ async function main() {
   await publisher.connect();
 
   while (true) {
-    const response = await subscriber.brPop('build-queue', 0);
+    const response = await subscriber.brPop("build-queue", 0);
     if (!response) continue;
 
-    console.log(response);
-
     const id = response.element;
+    console.log("🔔 Received job for:", id);
 
-    await downloadS3Folder(`/output/${id}`);
-    await buildProject(id);
-    copyFinalDist(id);
-
-    await publisher.hSet("status", id, "deployed");
+    try {
+      await downloadS3Folder(`output/${id}`);
+      await buildProject(id);
+      copyFinalDist(id);
+      await publisher.hSet("status", id, "deployed");
+      console.log(`Deployment succeeded for ${id}`);
+    } catch (err: any) {
+      console.error(`Deployment failed for ${id}:`, err.message);
+      await publisher.hSet("status", id, "failed");
+    }
   }
 }
 

@@ -1,19 +1,40 @@
-import { exec, spawn } from "child_process";
+// utils.ts
+import { exec } from "child_process";
+import fs from "fs";
 import path from "path";
 
-export function buildProject(id: string) {
-    return new Promise((resolve) => {
-        const child = exec(`cd ${path.join(__dirname, `output/${id}`)} && npm install && npm run build`)
+export function buildProject(id: string): Promise<void> {
+  return new Promise((resolve, reject) => {
+    const basePath = path.join(__dirname, `output/${id}`);
+    const frontendPath = path.join(basePath, "frontend");
+    const projectDir = fs.existsSync(frontendPath) ? frontendPath : basePath;
+    const buildOutputDir = path.join(projectDir, "dist");
 
-        child.stdout?.on('data', function(data) {
-            console.log('stdout: ' + data);
-        });
-        child.stderr?.on('data', function(data) {
-            console.log('stderr: ' + data);
-        });
+    const command = `cd ${projectDir} && npm install && npm run build`;
+    console.log("Running build in:", projectDir);
 
-        child.on('close', function(code) {
-           resolve("")
-        });
-    })
+    const child = exec(command);
+
+    child.stdout?.on("data", (data) => {
+      console.log("stdout:", data.toString());
+    });
+
+    child.stderr?.on("data", (data) => {
+      console.error("stderr:", data.toString());
+    });
+
+    child.on("close", (code) => {
+      if (code !== 0) {
+        return reject(new Error(`Build failed with exit code ${code}`));
+      }
+
+      if (!fs.existsSync(buildOutputDir)) {
+        return reject(
+          new Error(`Build finished but dist/ folder not found at ${buildOutputDir}`)
+        );
+      }
+
+      resolve();
+    });
+  });
 }

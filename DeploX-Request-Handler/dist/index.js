@@ -13,46 +13,49 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
-const client_s3_1 = require("@aws-sdk/client-s3");
-const stream_1 = require("stream");
-const s3Client = new client_s3_1.S3Client({
-    region: "auto",
-    endpoint: "https://726d35c45a73baff9771fb499d309432.r2.cloudflarestorage.com",
+const dotenv_1 = __importDefault(require("dotenv"));
+const aws_sdk_1 = require("aws-sdk");
+const mime_types_1 = __importDefault(require("mime-types"));
+dotenv_1.default.config();
+const app = (0, express_1.default)();
+const s3 = new aws_sdk_1.S3({
+    region: process.env.AWS_REGION,
+    endpoint: process.env.AWS_ENDPOINT,
     credentials: {
-        accessKeyId: "bab6422746fd4d56a9161dc1e57d113c",
-        secretAccessKey: "403c892208d58ccf584872fa47fde059ee0abf397e3ff5c7a431cfedbb79ca8f"
+        accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+        secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY
     }
 });
-const app = (0, express_1.default)();
-app.get("/*", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const host = req.hostname;
-    const id = host.split(".")[0];
-    const filePath = req.path.startsWith("/") ? req.path.substring(1) : req.path;
-    try {
-        const data = yield s3Client.send(new client_s3_1.GetObjectCommand({
-            Bucket: "deplox",
-            Key: `dist/${id}/${filePath}`
-        }));
-        const type = filePath.endsWith(".html") ? "text/html" :
-            filePath.endsWith(".css") ? "text/css" :
-                filePath.endsWith(".js") ? "application/javascript" :
-                    "application/octet-stream";
-        res.set("Content-Type", type);
-        // TypeScript-safe stream handling
-        const bodyStream = data.Body;
-        if (bodyStream instanceof stream_1.Readable) {
-            bodyStream.pipe(res);
-        }
-        else {
-            console.error("data.Body is not a Readable stream:", bodyStream);
-            res.status(500).send("Internal server error");
-        }
-    }
-    catch (err) {
-        console.error(err);
-        res.status(404).send("File not found");
-    }
+// Handle root "/"
+app.get("/", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    serveFromS3(req, res, "/index.html");
 }));
+// Handle all other paths
+app.get("/*splat", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    serveFromS3(req, res, req.path);
+}));
+// Fetch file from S3 based on subdomain and request path
+function serveFromS3(req, res, path) {
+    return __awaiter(this, void 0, void 0, function* () {
+        try {
+            const host = req.hostname; // e.g. "755mt.deplox.com"
+            const id = host.split(".")[0]; // e.g. "755mt"
+            const s3Key = `dist/${id}${path}`; // e.g. "dist/755mt/index.html"
+            console.log("Fetching:", s3Key);
+            const contents = yield s3.getObject({
+                Bucket: "deplox",
+                Key: s3Key
+            }).promise();
+            const contentType = mime_types_1.default.lookup(path) || "application/octet-stream";
+            res.set("Content-Type", contentType);
+            res.send(contents.Body);
+        }
+        catch (err) {
+            console.error("Error fetching:", err);
+            res.status(404).send("File not found");
+        }
+    });
+}
 app.listen(3001, () => {
-    console.log("Server running on port 3001");
+    console.log("Server running at http://localhost:3001");
 });

@@ -1,11 +1,13 @@
 import express from "express";
-import { S3Client, GetObjectCommand } from "@aws-sdk/client-s3";
-import { Readable } from "stream";
 import dotenv from "dotenv";
+import { S3 } from "aws-sdk";
+import mime from "mime-types";
 
 dotenv.config();
 
-const s3Client = new S3Client({
+const app = express();
+
+const s3 = new S3({
   region: process.env.AWS_REGION,
   endpoint: process.env.AWS_ENDPOINT,
   credentials: {
@@ -14,39 +16,39 @@ const s3Client = new S3Client({
   }
 });
 
-const app = express();
-
-app.get("/*", async (req, res) => {
-  const host = req.hostname;
-  const id = host.split(".")[0];
-  const filePath = req.path.startsWith("/") ? req.path.substring(1) : req.path;
-
-  try {
-    const data = await s3Client.send(new GetObjectCommand({
-      Bucket: process.env.AWS_BUCKET_NAME!,
-      Key: `dist/${id}/${filePath}`
-    }));
-
-    const type = filePath.endsWith(".html") ? "text/html" :
-                 filePath.endsWith(".css") ? "text/css" :
-                 filePath.endsWith(".js") ? "application/javascript" :
-                 "application/octet-stream";
-
-    res.set("Content-Type", type);
-
-    const bodyStream = data.Body;
-    if (bodyStream instanceof Readable) {
-      bodyStream.pipe(res);
-    } else {
-      console.error("data.Body is not a Readable stream:", bodyStream);
-      res.status(500).send("Internal server error");
-    }
-  } catch (err) {
-    console.error(err);
-    res.status(404).send("File not found");
-  }
+// Handle root "/"
+app.get("/", async (req, res) => {
+  serveFromS3(req, res, "/index.html");
 });
 
+// Handle all other paths
+app.get("/*splat", async (req, res) => {
+  serveFromS3(req, res, req.path);
+});
+
+// Fetch file from S3 based on subdomain and request path
+async function serveFromS3(req: express.Request, res: express.Response, path: string) {
+  try {
+    const host = req.hostname; // e.g. "755mt.deplox.com"
+    const id = host.split(".")[0]; // e.g. "755mt"
+
+    const s3Key = `dist/${id}${path}`; // e.g. "dist/755mt/index.html"
+    console.log("Fetching:", s3Key);
+
+    const contents = await s3.getObject({
+      Bucket: "deplox",
+      Key: s3Key
+    }).promise();
+
+    const contentType = mime.lookup(path) || "application/octet-stream";
+    res.set("Content-Type", contentType);
+    res.send(contents.Body);
+  } catch (err) {
+    console.error("Error fetching:", err);
+    res.status(404).send("File not found");
+  }
+}
+
 app.listen(3001, () => {
-  console.log("Server running on port 3001");
+  console.log("Server running at http://localhost:3001");
 });
